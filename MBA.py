@@ -50,7 +50,7 @@ class Solver():
         self.count = np.zeros(bb.k)
 
     def cal_regret(self,k):
-        self.regret_val = self.bb.bb_machine[self.bb.best_machine] - self.bb.bb_machine[k]
+        self.regret_val += self.bb.bb_machine[self.bb.best_machine] - self.bb.bb_machine[k]
         self.regrets.append(self.regret_val)
 
         
@@ -61,9 +61,10 @@ class Solver():
     def run(self,total_step):
         for i in range(total_step):
             k = self.run_one_step()
+            self.count[k]+=1
             self.cal_regret(k)
             self.action.append(k)
-            self.count[k]+=1
+            
             
             
 '''
@@ -73,15 +74,14 @@ class Solver():
 class EGreedy(Solver):
     def __init__(self,bb,e = 0.01, init_pro = 1.0):
         super(EGreedy,self).__init__(bb)
-        # 记录老虎机
-        self.bb = bb
+
         # 记录拉杆权重
         self.evaluation = np.array([init_pro]*self.bb.k)
         # 记录e值
         self.e = e
     def run_one_step(self):
         # 判断概率
-        if np.random.rand()>self.e:
+        if np.random.random()>self.e:
             k = np.argmax(self.evaluation)
         else:
             k = np.random.randint(0,self.bb.k)
@@ -105,11 +105,11 @@ def plot_results(solvers, solver_names):
 # test
 np.random.seed(1)
 # 初始化老虎机
-k = 10
+k = 20
 bb = BernoulliBandit(k)
-e = 0.01
+e = 0.2
 egreedy = EGreedy(bb,e)
-egreedy.run(5000)
+egreedy.run(500)
 print('epsilon-贪婪算法的累积懊悔为：', egreedy.regrets)
 plot_results([egreedy], ["EGreedy"])
 
